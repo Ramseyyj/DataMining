@@ -5,7 +5,7 @@ from nltk.corpus import stopwords
 import os
 import math
 
-rootDir = os.path.abspath('.') + '\\assignment1\\ICML'
+rootDir = os.path.abspath('.') + '\\ICML'
 
 Stemmer = SnowballStemmer('english')
 stop_words = set(stopwords.words('english'))
