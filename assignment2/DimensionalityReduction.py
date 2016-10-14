@@ -1,9 +1,9 @@
-# implement PCA for dimensionality reduction
-
+# dimensionality reduction
 import numpy as np
 import os
 
 
+# 从txt文件中读取矩阵
 def load_matrix_from_txt(txt_filename):
 
     root_dir = os.path.abspath('.') + '\\data'
@@ -28,6 +28,7 @@ def load_matrix_from_txt(txt_filename):
     return matrix, labels
 
 
+# 把矩阵每一行的均值变为0
 def matrix_mean_zero(matrix):
 
     a = np.mean(matrix, axis=1)
@@ -39,6 +40,7 @@ def matrix_mean_zero(matrix):
     return matrix
 
 
+# 根据协方差矩阵得到降维矩阵
 def dimensionality_reduction(matrix, k):
 
     eig_val, eig_vec = np.linalg.eig(matrix)
@@ -50,6 +52,26 @@ def dimensionality_reduction(matrix, k):
     return np.transpose(eig_vec[:k, :])
 
 
+# PCA 降维法
+def PCA_dimensionality_reduction(matrix_train, matrix_test, k):
+
+    # 把矩阵每一行的均值变为0
+    matrix_train = matrix_mean_zero(matrix_train)
+
+    # 求矩阵的协方差矩阵
+    cov_matrix = np.cov(np.transpose(matrix_train))
+
+    # 对协方差矩阵进行降维
+    DR_matrix = dimensionality_reduction(cov_matrix, k)
+
+    # 用训练集得到的降维矩阵对训练集和测试集进行降维
+    DR_matrix_train = np.dot(matrix_train, DR_matrix)
+    DR_matrix_test = np.dot(matrix_test, DR_matrix)
+
+    return DR_matrix_train, DR_matrix_test
+
+
+# 判断精度计算
 def accuracy_compute(matrix_train, matrix_test, labels_train, labels_test):
 
     matched_label_count = 0
@@ -70,34 +92,14 @@ def accuracy_compute(matrix_train, matrix_test, labels_train, labels_test):
     accuracy = matched_label_count / matrix_test.shape[0]
     return accuracy
 
-
 # 把矩阵从txt提取出来并把最后一列标志位进行分离
 SonarTrainMatrix, SonarTrainLabels = load_matrix_from_txt('sonar-train.txt')
 SonarTestMatrix, SonarTestLabels = load_matrix_from_txt('sonar-test.txt')
 SpliceTrainMatrix, SpliceTrainLabels = load_matrix_from_txt('splice-train.txt')
 SpliceTestMatrix, SpliceTestLabels = load_matrix_from_txt('splice-test.txt')
 
-
-# 把矩阵每一行的均值变为0
-SonarTrainMatrix = matrix_mean_zero(SonarTrainMatrix)
-# SonarTestMatrix = matrix_mean_zero(SonarTestMatrix)
-SpliceTrainMatrix = matrix_mean_zero(SpliceTrainMatrix)
-# SpliceTestMatrix = matrix_mean_zero(SpliceTestMatrix)
-
-
-# 求矩阵的协方差矩阵
-SonarTrainCovMatrix = np.cov(np.transpose(SonarTrainMatrix))
-# SonarTestCovMatrix = np.cov(np.transpose(SonarTestMatrix))
-SpliceTrainCovMatrix = np.cov(np.transpose(SpliceTrainMatrix))
-# SpliceTestCovMatrix = np.cov(np.transpose(SpliceTestMatrix))
-
-Sonar_DRMatrix = dimensionality_reduction(SonarTrainCovMatrix, 10)
-Splice_DRMatrix = dimensionality_reduction(SpliceTrainCovMatrix, 10)
-
-SonarTrainDRMatrix = np.dot(SonarTrainMatrix, Sonar_DRMatrix)
-SonarTestDRMatrix = np.dot(SonarTestMatrix, Sonar_DRMatrix)
-SpliceTrainDRMatrix = np.dot(SpliceTrainMatrix, Splice_DRMatrix)
-SpliceTestDRMatrix = np.dot(SpliceTestMatrix, Splice_DRMatrix)
+SonarTrainDRMatrix, SonarTestDRMatrix = PCA_dimensionality_reduction(SonarTrainMatrix, SonarTestMatrix, 10)
+SpliceTrainDRMatrix, SpliceTestDRMatrix = PCA_dimensionality_reduction(SpliceTrainMatrix, SpliceTestMatrix, 10)
 
 Sonar_accuracy = accuracy_compute(SonarTrainDRMatrix, SonarTestDRMatrix, SonarTrainLabels, SonarTestLabels)
 print(Sonar_accuracy)
