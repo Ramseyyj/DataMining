@@ -51,35 +51,57 @@ def dimensionality_reduction(matrix, k):
 
 
 # 把矩阵从txt提取出来并把最后一列标志位进行分离
+SonarTrainMatrix, SonarTrainLabels = load_matrix_from_txt('sonar-train.txt')
 SonarTestMatrix, SonarTestLabels = load_matrix_from_txt('sonar-test.txt')
-# SonarTrainMatrix, SonarTrainLabels = load_matrix_from_txt('sonar-train.txt')
-# SpliceTestMatrix, SpliceTestLabels = load_matrix_from_txt('splice-test.txt')
 # SpliceTrainMatrix, SpliceTrainLabels = load_matrix_from_txt('splice-train.txt')
+# SpliceTestMatrix, SpliceTestLabels = load_matrix_from_txt('splice-test.txt')
 
-# print(SonarTestMatrix)
-# print(SonarTestLabels)
 # print(SonarTrainMatrix)
 # print(SonarTestLabels)
-# print(SpliceTestMatrix)
-# print(SpliceTestLabels)
+# print(SonarTestMatrix)
+# print(SonarTestLabels)
 # print(SpliceTrainMatrix)
 # print(SpliceTrainLabels)
+# print(SpliceTestMatrix)
+# print(SpliceTestLabels)
+
 
 # 把矩阵每一行的均值变为0
-SonarTestMatrix = matrix_mean_zero(SonarTestMatrix)
-# SonarTrainMatrix = matrix_mean_zero(SonarTrainMatrix)
-# SpliceTestMatrix = matrix_mean_zero(SpliceTestMatrix)
+SonarTrainMatrix = matrix_mean_zero(SonarTrainMatrix)
+# SonarTestMatrix = matrix_mean_zero(SonarTestMatrix)
 # SpliceTrainMatrix = matrix_mean_zero(SpliceTrainMatrix)
+# SpliceTestMatrix = matrix_mean_zero(SpliceTestMatrix)
+
 
 # 求矩阵的协方差矩阵
-SonarTestCovMatrix = np.cov(np.transpose(SonarTestMatrix))
-# SonarTrainCovMatrix = np.cov(np.transpose(SonarTrainMatrix))
-# SpliceTestCovMatrix = np.cov(np.transpose(SpliceTestMatrix))
+SonarTrainCovMatrix = np.cov(np.transpose(SonarTrainMatrix))
+# SonarTestCovMatrix = np.cov(np.transpose(SonarTestMatrix))
 # SpliceTrainCovMatrix = np.cov(np.transpose(SpliceTrainMatrix))
-
-SonarTestDRMatrix = dimensionality_reduction(SonarTestCovMatrix, 5)
-
-print(np.dot(SonarTestMatrix, SonarTestDRMatrix))
-print(np.dot(SonarTestMatrix, SonarTestDRMatrix).shape)
+# SpliceTestCovMatrix = np.cov(np.transpose(SpliceTestMatrix))
 
 
+DRMatrix = dimensionality_reduction(SonarTrainCovMatrix, 10)
+
+SonarTrainDRMatrix = np.dot(SonarTrainMatrix, DRMatrix)
+SonarTestDRMatrix = np.dot(SonarTestMatrix, DRMatrix)
+
+print(SonarTrainDRMatrix.shape)
+print(SonarTestDRMatrix.shape)
+
+min_dist = 0
+min_index = 0
+matched_label_count = 0
+for i in range(SonarTestDRMatrix.shape[0]):
+    for j in range(SonarTrainDRMatrix.shape[0]):
+
+        dist = np.linalg.norm(SonarTestDRMatrix[i, :]-SonarTrainDRMatrix[j, :])
+
+        if dist < min_dist:
+            min_dist = dist
+            min_index = j
+
+    if SonarTestLabels[i] == SonarTrainLabels[j]:
+        matched_label_count += 1
+
+accuracy = matched_label_count / SonarTestDRMatrix.shape[0]
+print(accuracy)
