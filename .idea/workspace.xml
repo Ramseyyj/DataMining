@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8112d666-da18-4f2c-aede-c72de20b8b0b" name="Default" comment="test git ignore 1">
+    <list default="true" id="8112d666-da18-4f2c-aede-c72de20b8b0b" name="Default" comment="test git ignore 2">
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/DataMining.iml" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/dictionaries/Joey.xml" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="" />
@@ -10,7 +10,6 @@
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/modules.xml" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/vcs.xml" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.gitignore" afterPath="$PROJECT_DIR$/.gitignore" />
     </list>
     <list id="4b8ed112-a18b-4177-8da7-787ce969f5cd" name="New changelist" comment="New changelist" />
     <ignored path="DataMining.iws" />
@@ -53,17 +52,17 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="DimensionalityReduction.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="DimensionalityReduction.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/assignment2/DimensionalityReduction.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="565">
+            <state relative-caret-position="582">
               <caret line="108" column="0" selection-start-line="108" selection-start-column="0" selection-end-line="108" selection-end-column="0" />
               <folding />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
+      <file leaf-file-name=".gitignore" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="384">
@@ -115,8 +114,8 @@
         <option value="$PROJECT_DIR$/assignment2/SVD.py" />
         <option value="$PROJECT_DIR$/assignment1/DataMining.py" />
         <option value="$PROJECT_DIR$/assignment2/test.py" />
-        <option value="$PROJECT_DIR$/assignment2/DimensionalityReduction.py" />
         <option value="$PROJECT_DIR$/.gitignore" />
+        <option value="$PROJECT_DIR$/assignment2/DimensionalityReduction.py" />
       </list>
     </option>
   </component>
@@ -568,7 +567,14 @@
       <option name="project" value="LOCAL" />
       <updated>1476532658284</updated>
     </task>
-    <option name="localTasksCounter" value="11" />
+    <task id="LOCAL-00011" summary="test git ignore 2">
+      <created>1476532908448</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1476532908448</updated>
+    </task>
+    <option name="localTasksCounter" value="12" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -651,7 +657,8 @@
     <MESSAGE value="test" />
     <MESSAGE value="test git ignore" />
     <MESSAGE value="test git ignore 1" />
-    <option name="LAST_COMMIT_MESSAGE" value="test git ignore 1" />
+    <MESSAGE value="test git ignore 2" />
+    <option name="LAST_COMMIT_MESSAGE" value="test git ignore 2" />
     <option name="PRESELECT_EXISTING_CHANGELIST" value="false" />
   </component>
   <component name="XDebuggerManager">
@@ -1050,18 +1057,18 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/assignment2/DimensionalityReduction.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="565">
-          <caret line="108" column="0" selection-start-line="108" selection-start-column="0" selection-end-line="108" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="384">
           <caret line="91" column="6" selection-start-line="91" selection-start-column="6" selection-end-line="91" selection-end-column="6" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/assignment2/DimensionalityReduction.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="582">
+          <caret line="108" column="0" selection-start-line="108" selection-start-column="0" selection-end-line="108" selection-end-column="0" />
           <folding />
         </state>
       </provider>
