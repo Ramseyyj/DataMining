@@ -106,5 +106,4 @@ print(Sonar_accuracy)
 Splice_accuracy = accuracy_compute(SpliceTrainDRMatrix, SpliceTestDRMatrix, SpliceTrainLabels, SpliceTestLabels)
 print(Splice_accuracy)
 
-#test
 
