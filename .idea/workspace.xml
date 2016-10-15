@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8112d666-da18-4f2c-aede-c72de20b8b0b" name="Default" comment="">
+    <list default="true" id="8112d666-da18-4f2c-aede-c72de20b8b0b" name="Default" comment="test git ignore 1">
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/DataMining.iml" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/dictionaries/Joey.xml" afterPath="" />
       <change type="DELETED" beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterPath="" />
@@ -66,7 +66,7 @@
       <file leaf-file-name=".gitignore" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/.gitignore">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="435">
+            <state relative-caret-position="384">
               <caret line="91" column="6" selection-start-line="91" selection-start-column="6" selection-end-line="91" selection-end-column="6" />
               <folding />
             </state>
@@ -561,7 +561,14 @@
       <option name="project" value="LOCAL" />
       <updated>1476532514991</updated>
     </task>
-    <option name="localTasksCounter" value="10" />
+    <task id="LOCAL-00010" summary="test git ignore 1">
+      <created>1476532658284</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1476532658284</updated>
+    </task>
+    <option name="localTasksCounter" value="11" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -643,7 +650,8 @@
     <MESSAGE value="modify .gitignore" />
     <MESSAGE value="test" />
     <MESSAGE value="test git ignore" />
-    <option name="LAST_COMMIT_MESSAGE" value="test git ignore" />
+    <MESSAGE value="test git ignore 1" />
+    <option name="LAST_COMMIT_MESSAGE" value="test git ignore 1" />
     <option name="PRESELECT_EXISTING_CHANGELIST" value="false" />
   </component>
   <component name="XDebuggerManager">
@@ -1052,7 +1060,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/.gitignore">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="435">
+        <state relative-caret-position="384">
           <caret line="91" column="6" selection-start-line="91" selection-start-column="6" selection-end-line="91" selection-end-column="6" />
           <folding />
         </state>
