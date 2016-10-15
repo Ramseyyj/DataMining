@@ -17,17 +17,14 @@ T = np.zeros((N,N))
 #        T[i,j] = T[j,i] = -0.5*(D[i,j]**2 -1.0/N*np.dot(D[i,:],D[i,:]) -1.0/N*np.dot(D[:,j],D[:,j])+ss)
 
 
-
-#solution 2
-#K = np.dot(D,np.transpose(D))
+# solution 2
+# K = np.dot(D,np.transpose(D))
 D2 = D**2
 H = np.eye(N) - 1/N
-T = -0.5*np.dot(np.dot(H,D2),H)
+B = -0.5*np.dot(np.dot(H, D2), H)
 
-eigVal,eigVec = np.linalg.eig(T)
-X = np.dot(eigVec[:,:2],np.diag(np.sqrt(eigVal[:2])))
+eigVal, eigVec = np.linalg.eig(B)
+X = np.dot(eigVec[:, :2], np.diag(np.sqrt(eigVal[:2])))
+print(X.shape)
 
-print('original distance','\tnew distance')
-for i in range(N):
-    for j in range(i+1,N):
-        print(np.str(D[i,j]),'\t\t',np.str("%.4f"%np.linalg.norm(X[i]-X[j])))
+# X即降维后的矩阵
