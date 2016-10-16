@@ -81,10 +81,10 @@ def SVD_dimension_reduction(matrix_train, matrix_test, k):
 
     u = u[:, :k]
 
-    DR_matrix_trian = np.dot(matrix_train, u)
+    DR_matrix_train = np.dot(matrix_train, u)
     DR_matrix_test = np.dot(matrix_test, u)
 
-    return DR_matrix_trian, DR_matrix_test
+    return DR_matrix_train, DR_matrix_test
 
 
 def KNN_algorithm(matrix, k_nn):
