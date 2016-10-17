@@ -6,29 +6,58 @@ from scipy.sparse import csgraph
 const_maxfloat = 1.7976931348623157e+308
 
 
+def print_matrix(matrix, filename):
+
+    root_dir = os.path.abspath('.') + '\\data'
+    file_dir = root_dir + '\\' + filename
+
+    fp = open(file_dir, 'w')
+
+    for i in range(matrix.shape[0]):
+        for j in range(matrix.shape[1]):
+            print('%r  ' % matrix[i, j], end="", file=fp)
+        print('\n', file=fp)
+
+
+def compare(matrix1, matrix2):
+
+    if matrix1.shape == matrix2.shape:
+        for i in range(matrix1.shape[0]):
+            for j in range(matrix1.shape[1]):
+                if matrix1[i, j] != matrix2[i, j]:
+                    return False
+        return True
+    return False
+
+
 # 从txt文件中读取矩阵
-def load_matrix_from_txt(txt_filename):
+def load_matrix_from_txt(txt_filename, label_flag):
 
     root_dir = os.path.abspath('.') + '\\data'
     txt_file_dir = root_dir + '\\' + txt_filename
 
-    lines = open(txt_file_dir).readlines()
-    fp = open(root_dir+'\\modify_'+txt_filename, 'w')
+    if label_flag:
+        lines = open(txt_file_dir).readlines()
+        fp = open(root_dir + '\\modify_' + txt_filename, 'w')
 
-    for line in lines:
-        fp.write(line.replace(',', ' '))
-    fp.close()
+        for line in lines:
+            fp.write(line.replace(',', ' '))
+        fp.close()
 
-    matrix = np.loadtxt(root_dir+'\\modify_'+txt_filename)
+        matrix = np.loadtxt(root_dir + '\\modify_' + txt_filename)
 
-    labels = []
-    column_count = matrix.shape[1]
-    for row in matrix:
-        labels.append(row[column_count-1])
+        labels = []
+        column_count = matrix.shape[1]
+        for row in matrix:
+            labels.append(row[column_count-1])
 
-    matrix = matrix[:, :column_count-1]
+        matrix = matrix[:, :column_count-1]
 
-    return matrix, labels
+        return matrix, labels
+    else:
+        matrix = np.loadtxt(txt_file_dir)
+
+        return matrix
 
 
 # 把矩阵每一行的均值变为0
@@ -48,7 +77,13 @@ def dimension_reduction(matrix, k):
 
     eig_val, eig_vec = np.linalg.eig(matrix)
 
-    sorted_index = np.argsort(-eig_val, axis=1)
+    A = load_matrix_from_txt('eig_vec.txt', False)
+
+    print(compare(A, eig_vec))
+
+    print_matrix(eig_vec, 'eig_vec.txt')
+
+    sorted_index = np.argsort(-eig_val, axis=0)
 
     eig_vec = eig_vec[sorted_index]
 
@@ -59,16 +94,16 @@ def dimension_reduction(matrix, k):
 def PCA_dimension_reduction(matrix_train, matrix_test, k):
 
     # 把矩阵每一行的均值变为0
-    matrix_train = matrix_mean_zero(matrix_train)
+    matrix_train = matrix_mean_zero(matrix_train.T)
 
     # 求矩阵的协方差矩阵
-    cov_matrix = np.cov(np.transpose(matrix_train))
+    cov_matrix = np.cov(matrix_train)
 
     # 对协方差矩阵进行降维
     DR_matrix = dimension_reduction(cov_matrix, k)
 
     # 用训练集得到的降维矩阵对训练集和测试集进行降维
-    DR_matrix_train = np.dot(matrix_train, DR_matrix)
+    DR_matrix_train = np.dot(matrix_train.T, DR_matrix)
     DR_matrix_test = np.dot(matrix_test, DR_matrix)
 
     return DR_matrix_train, DR_matrix_test
@@ -102,6 +137,7 @@ def KNN_algorithm(matrix, k_nn):
     return matrix
 
 
+# MDS降维法
 def MDS_dimension_reduction(matrix, k):
 
     M = matrix.shape[0]
@@ -116,6 +152,7 @@ def MDS_dimension_reduction(matrix, k):
     return matrix
 
 
+# ISOMAP降维法
 def ISOMAP_dimension_reduction(matrix, k):
 
     graph = np.zeros((matrix.shape[0], matrix.shape[0]))
@@ -155,14 +192,14 @@ def accuracy_compute(matrix_train, matrix_test, labels_train, labels_test):
 
 
 # 把矩阵从txt提取出来并把最后一列标志位进行分离
-SonarTrainMatrix, SonarTrainLabels = load_matrix_from_txt('sonar-train.txt')
-SonarTestMatrix, SonarTestLabels = load_matrix_from_txt('sonar-test.txt')
-SpliceTrainMatrix, SpliceTrainLabels = load_matrix_from_txt('splice-train.txt')
-SpliceTestMatrix, SpliceTestLabels = load_matrix_from_txt('splice-test.txt')
+SonarTrainMatrix, SonarTrainLabels = load_matrix_from_txt('sonar-train.txt', True)
+SonarTestMatrix, SonarTestLabels = load_matrix_from_txt('sonar-test.txt', True)
+SpliceTrainMatrix, SpliceTrainLabels = load_matrix_from_txt('splice-train.txt', True)
+SpliceTestMatrix, SpliceTestLabels = load_matrix_from_txt('splice-test.txt', True)
 
-# SonarTrainDRMatrix, SonarTestDRMatrix = PCA_dimension_reduction(SonarTrainMatrix, SonarTestMatrix, 10)
+SonarTrainDRMatrix, SonarTestDRMatrix = PCA_dimension_reduction(SonarTrainMatrix, SonarTestMatrix, 10)
 # SpliceTrainDRMatrix, SpliceTestDRMatrix = PCA_dimension_reduction(SpliceTrainMatrix, SpliceTestMatrix, 10)
-SonarTrainDRMatrix, SonarTestDRMatrix = SVD_dimension_reduction(SonarTrainMatrix, SonarTestMatrix, 30)
+# SonarTrainDRMatrix, SonarTestDRMatrix = SVD_dimension_reduction(SonarTrainMatrix, SonarTestMatrix, 30)
 # SonarTrainDRMatrix = ISOMAP_dimension_reduction(SonarTrainMatrix, 10)
 # SonarTestDRMatrix = ISOMAP_dimension_reduction(SonarTestMatrix, 10)
 
@@ -173,4 +210,3 @@ Sonar_accuracy = accuracy_compute(SonarTrainDRMatrix, SonarTestDRMatrix, SonarTr
 print(Sonar_accuracy)
 # Splice_accuracy = accuracy_compute(SpliceTrainDRMatrix, SpliceTestDRMatrix, SpliceTrainLabels, SpliceTestLabels)
 # print(Splice_accuracy)
-
