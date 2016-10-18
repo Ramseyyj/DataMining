@@ -167,6 +167,7 @@ def accuracy_compute(matrix_train, matrix_test, labels_train, labels_test):
     return accuracy
 
 
+# 计算指定数据集在相应降维方法下的1-NN精准度
 def dimension_reduction_accuracy(file_train, file_test, method, k, k_nn=21):
 
     matrix_train, labels_train = load_matrix_from_txt(file_train, True)
