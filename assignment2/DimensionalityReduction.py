@@ -6,30 +6,6 @@ from scipy.sparse import csgraph
 const_maxfloat = 1.7976931348623157e+308
 
 
-def print_matrix(matrix, filename):
-
-    root_dir = os.path.abspath('.') + '\\data'
-    file_dir = root_dir + '\\' + filename
-
-    fp = open(file_dir, 'w')
-
-    for i in range(matrix.shape[0]):
-        for j in range(matrix.shape[1]):
-            print('%r  ' % matrix[i, j], end="", file=fp)
-        print('\n', file=fp)
-
-
-def compare(matrix1, matrix2):
-
-    if matrix1.shape == matrix2.shape:
-        for i in range(matrix1.shape[0]):
-            for j in range(matrix1.shape[1]):
-                if matrix1[i, j] != matrix2[i, j]:
-                    return False
-        return True
-    return False
-
-
 # 从txt文件中读取矩阵
 def load_matrix_from_txt(txt_filename, label_flag):
 
@@ -77,17 +53,13 @@ def dimension_reduction(matrix, k):
 
     eig_val, eig_vec = np.linalg.eig(matrix)
 
-    A = load_matrix_from_txt('eig_vec.txt', False)
+    sorted_index = np.argsort(-eig_val)
 
-    print(compare(A, eig_vec))
+    eig_vec = eig_vec.T
 
-    print_matrix(eig_vec, 'eig_vec.txt')
+    eig_vec_sorted = eig_vec[sorted_index]
 
-    sorted_index = np.argsort(-eig_val, axis=0)
-
-    eig_vec = eig_vec[sorted_index]
-
-    return np.transpose(eig_vec[:k, :])
+    return np.transpose(eig_vec_sorted[:k, :])
 
 
 # PCA降维法
@@ -153,7 +125,9 @@ def MDS_dimension_reduction(matrix, k):
 
 
 # ISOMAP降维法
-def ISOMAP_dimension_reduction(matrix, k):
+def ISOMAP_dimension_reduction(matrix_train, matrix_test, k, k_nn):
+
+    matrix = np.concatenate((matrix_train, matrix_test), axis=0)
 
     graph = np.zeros((matrix.shape[0], matrix.shape[0]))
 
@@ -161,12 +135,12 @@ def ISOMAP_dimension_reduction(matrix, k):
         for j in range(matrix.shape[0]):
             graph[i, j] = np.linalg.norm(matrix[i, :] - matrix[j, :])
 
-    graph = KNN_algorithm(graph, 21)
+    graph = KNN_algorithm(graph, k_nn)
     graph = csgraph.shortest_path(graph, 'D', )
 
     matrix = MDS_dimension_reduction(graph, k)
 
-    return matrix
+    return matrix[:matrix_train.shape[0], :], matrix[matrix_train.shape[0]:, :]
 
 
 # 判断精度计算
@@ -191,22 +165,35 @@ def accuracy_compute(matrix_train, matrix_test, labels_train, labels_test):
     return accuracy
 
 
-# 把矩阵从txt提取出来并把最后一列标志位进行分离
-SonarTrainMatrix, SonarTrainLabels = load_matrix_from_txt('sonar-train.txt', True)
-SonarTestMatrix, SonarTestLabels = load_matrix_from_txt('sonar-test.txt', True)
-SpliceTrainMatrix, SpliceTrainLabels = load_matrix_from_txt('splice-train.txt', True)
-SpliceTestMatrix, SpliceTestLabels = load_matrix_from_txt('splice-test.txt', True)
+def dimension_reduction_accuracy(file_train, file_test, method, k, k_nn=21):
 
-SonarTrainDRMatrix, SonarTestDRMatrix = PCA_dimension_reduction(SonarTrainMatrix, SonarTestMatrix, 10)
-# SpliceTrainDRMatrix, SpliceTestDRMatrix = PCA_dimension_reduction(SpliceTrainMatrix, SpliceTestMatrix, 10)
-# SonarTrainDRMatrix, SonarTestDRMatrix = SVD_dimension_reduction(SonarTrainMatrix, SonarTestMatrix, 30)
-# SonarTrainDRMatrix = ISOMAP_dimension_reduction(SonarTrainMatrix, 10)
-# SonarTestDRMatrix = ISOMAP_dimension_reduction(SonarTestMatrix, 10)
+    matrix_train, labels_train = load_matrix_from_txt(file_train, True)
+    matrix_test, labels_test = load_matrix_from_txt(file_test, True)
 
-# print(SonarTrainDRMatrix)
-# print(SonarTestDRMatrix)
+    if method == 'PCA':
+        DRmatrix_train, DRmatrix_test = PCA_dimension_reduction(matrix_train, matrix_test, k)
+    elif method == 'SVD':
+        DRmatrix_train, DRmatrix_test = SVD_dimension_reduction(matrix_train, matrix_test, k)
+    elif method == 'ISOMAP':
+        DRmatrix_train, DRmatrix_test = ISOMAP_dimension_reduction(matrix_train, matrix_test, k, k_nn)
+    else:
+        print('error!')
+        exit()
 
-Sonar_accuracy = accuracy_compute(SonarTrainDRMatrix, SonarTestDRMatrix, SonarTrainLabels, SonarTestLabels)
-print(Sonar_accuracy)
-# Splice_accuracy = accuracy_compute(SpliceTrainDRMatrix, SpliceTestDRMatrix, SpliceTrainLabels, SpliceTestLabels)
-# print(Splice_accuracy)
+    accuracy = accuracy_compute(DRmatrix_train, DRmatrix_test, labels_train, labels_test)
+
+    return accuracy
+
+dataset = [('sonar-train.txt', 'sonar-test.txt'), ('splice-train.txt', 'splice-test.txt')]
+methodset = ('PCA', 'SVD', 'ISOMAP')
+k_values = (10, 20, 30)
+
+for meth in methodset:
+    for data_i in range(2):
+        for k_value in k_values:
+            if data_i == 1:
+                acc = dimension_reduction_accuracy(dataset[data_i][0], dataset[data_i][1], meth, k_value, 192)
+            else:
+                acc = dimension_reduction_accuracy(dataset[data_i][0], dataset[data_i][1], meth, k_value)
+
+            print('dataset%d, %r, k=%d: %r' % (data_i+1, meth, k_value, acc))
