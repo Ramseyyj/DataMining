@@ -36,7 +36,7 @@ def load_matrix_from_txt(txt_filename, label_flag):
         return matrix
 
 
-# 把矩阵每一行的均值变为0
+# 对矩阵进行零均值化操作
 def matrix_mean_zero(matrix):
 
     a = np.mean(matrix, axis=1)
@@ -53,9 +53,9 @@ def dimension_reduction(matrix, k):
 
     eig_val, eig_vec = np.linalg.eig(matrix)
 
-    sorted_index = np.argsort(-eig_val)
-
     eig_vec = eig_vec.T
+
+    sorted_index = np.argsort(-eig_val, axis=0)
 
     eig_vec_sorted = eig_vec[sorted_index]
 
@@ -65,8 +65,9 @@ def dimension_reduction(matrix, k):
 # PCA降维法
 def PCA_dimension_reduction(matrix_train, matrix_test, k):
 
-    # 把矩阵每一行的均值变为0
+    # 对矩阵进行零均值化操作
     matrix_train = matrix_mean_zero(matrix_train.T)
+    matrix_test = matrix_mean_zero(matrix_test.T)
 
     # 求矩阵的协方差矩阵
     cov_matrix = np.cov(matrix_train)
@@ -76,7 +77,7 @@ def PCA_dimension_reduction(matrix_train, matrix_test, k):
 
     # 用训练集得到的降维矩阵对训练集和测试集进行降维
     DR_matrix_train = np.dot(matrix_train.T, DR_matrix)
-    DR_matrix_test = np.dot(matrix_test, DR_matrix)
+    DR_matrix_test = np.dot(matrix_test.T, DR_matrix)
 
     return DR_matrix_train, DR_matrix_test
 
@@ -94,6 +95,7 @@ def SVD_dimension_reduction(matrix_train, matrix_test, k):
     return DR_matrix_train, DR_matrix_test
 
 
+# K-NN算法
 def KNN_algorithm(matrix, k_nn):
 
     sorted_index = np.argsort(matrix, axis=1)
@@ -197,3 +199,4 @@ for meth in methodset:
                 acc = dimension_reduction_accuracy(dataset[data_i][0], dataset[data_i][1], meth, k_value)
 
             print('dataset%d, %r, k=%d: %r' % (data_i+1, meth, k_value, acc))
+
