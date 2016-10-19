@@ -1,0 +1,141 @@
+# Clustering
+
+import numpy as np
+import os
+import random
+
+const_maxfloat = 1.7976931348623157e+308
+
+
+# 从txt文件中读取矩阵
+def load_matrix_from_txt(txt_filename, label_flag):
+
+    root_dir = os.path.abspath('.') + '\\data'
+    txt_file_dir = root_dir + '\\' + txt_filename
+
+    if label_flag:
+        lines = open(txt_file_dir).readlines()
+        fp = open(root_dir + '\\modify_' + txt_filename, 'w')
+
+        for line in lines:
+            fp.write(line.replace(',', ' '))
+        fp.close()
+
+        matrix = np.loadtxt(root_dir + '\\modify_' + txt_filename)
+
+        labels = []
+        column_count = matrix.shape[1]
+        for row in matrix:
+            labels.append(row[column_count-1])
+
+        matrix = matrix[:, :column_count-1]
+
+        return matrix, labels
+    else:
+        matrix = np.loadtxt(txt_file_dir)
+
+        return matrix
+
+
+def random_medoids(matrix, k):
+
+    medoids = {}
+
+    for i in range(k):
+        index = random.randint(0, matrix.shape[0]-1)
+        medoids[i] = [index, matrix[index, :], set([])]
+
+    # for i in range(k):
+    #     medoids[i] = [i, matrix[i, :], set([])]
+
+    return medoids
+
+
+def init_medoids(matrix, k):
+
+    medoids = {}
+
+    for i in range(k):
+        medoids[i] = [0, matrix[0, :], set([])]
+
+    return medoids
+
+
+def compare_medoids(medoids1, medoids2):
+
+    for i in range(len(medoids1)):
+        if medoids1[i] != medoids2[i][0]:
+            return False
+
+    return True
+
+
+def min_medoid_index(medoids, vector):
+
+    min_dist = const_maxfloat
+    min_index = 0
+
+    for i in range(len(medoids)):
+        dist = np.linalg.norm(vector - medoids[i][1])
+
+        if dist < min_dist:
+            min_dist = dist
+            min_index = i
+
+    return min_index
+
+
+def clustering(medoids, matrix):
+
+    for i in range(len(medoids)):
+        medoids[i][2].clear()
+
+    for i in range(matrix.shape[0]):
+        medoids[min_medoid_index(medoids, matrix[i, :])][2].add(i)
+
+    return medoids
+
+
+def k_medoid_clustering(matrix, k):
+
+    medoids = random_medoids(matrix, k)
+
+    temp_medoids = [0 * i for i in range(k)]
+
+    count = 0
+
+    while not compare_medoids(temp_medoids, medoids):
+
+        count += 1
+
+        for i in range(k):
+            temp_medoids[i] = medoids[i][0]
+
+        medoids = clustering(medoids, matrix)
+
+        for i in range(len(medoids)):
+
+            min_dist = const_maxfloat
+            min_index = 0
+            for j in medoids[i][2]:
+
+                sum_dist = 0
+                for s in medoids[i][2]:
+                    sum_dist += np.linalg.norm(matrix[j, :] - matrix[s, :])
+
+                if sum_dist < min_dist:
+                    min_dist = sum_dist
+                    min_index = j
+
+            medoids[i][0] = min_index
+            medoids[i][1] = matrix[min_index, :]
+
+    print(count)
+
+    return medoids
+
+
+german_matrix, german_labels = load_matrix_from_txt('german.txt', True)
+clustering_result = k_medoid_clustering(german_matrix, 2)
+
+print(clustering_result)
