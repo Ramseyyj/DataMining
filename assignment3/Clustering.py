@@ -135,7 +135,74 @@ def k_medoid_clustering(matrix, k):
     return medoids
 
 
-german_matrix, german_labels = load_matrix_from_txt('german.txt', True)
-clustering_result = k_medoid_clustering(german_matrix, 2)
+def numbers_of_cluster_from_classes(labels, medoids_result, label_names, k):
 
-print(clustering_result)
+    m = np.zeros((k, k))
+
+    for i in range(k):
+        for j in range(k):
+
+            count = 0
+
+            for s in medoids_result[j][2]:
+                if labels[s] == label_names[i]:
+                    count += 1
+
+            m[i, j] = count
+
+    return m
+
+
+def purity_compute(m, k):
+
+    tatol = 0
+
+    for i in range(k):
+        for j in range(k):
+            tatol += m[i, j]
+
+    Pj_sum = 0
+    for i in range(k):
+        Pj_sum += m[:, i].max()
+
+    return Pj_sum / tatol
+
+
+def Gini_index_compute(m, k):
+
+    M = np.sum(m, axis=0)
+
+    G = np.arange(k)
+    for j in range(k):
+
+        temp_sum = 0
+        for i in range(k):
+            temp_sum += (m[i, j] / M[j])**2
+
+        G[j] = 1 - temp_sum
+
+    sum1 = 0
+    for j in range(k):
+        sum1 += G[j]*M[j]
+
+    sum2 = 0
+    for j in range(k):
+        sum2 += M[j]
+
+    return sum1 / sum2
+
+
+# german_matrix, german_labels = load_matrix_from_txt('german.txt', True)
+german_matrix, german_labels = load_matrix_from_txt('mnist.txt', True)
+clustering_result = k_medoid_clustering(german_matrix, 10)
+# print(clustering_result)
+
+# LabelNames = [1, -1]
+LabelNames = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+Mij = numbers_of_cluster_from_classes(german_labels, clustering_result, LabelNames, 10)
+# print(Mij)
+Purity = purity_compute(Mij, 10)
+GiniIndex = Gini_index_compute(Mij, 10)
+print(Purity)
+print(GiniIndex)
+
