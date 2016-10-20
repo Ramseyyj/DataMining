@@ -172,7 +172,7 @@ def Gini_index_compute(m, k):
 
     M = np.sum(m, axis=0)
 
-    G = np.arange(k)
+    G = np.zeros(k, dtype=np.float64)
     for j in range(k):
 
         temp_sum = 0
@@ -192,17 +192,27 @@ def Gini_index_compute(m, k):
     return sum1 / sum2
 
 
-# german_matrix, german_labels = load_matrix_from_txt('german.txt', True)
-german_matrix, german_labels = load_matrix_from_txt('mnist.txt', True)
-clustering_result = k_medoid_clustering(german_matrix, 10)
+k_value = 2
+
+german_matrix, german_labels = load_matrix_from_txt('german.txt', True)
+# german_matrix, german_labels = load_matrix_from_txt('mnist.txt', True)
+clustering_result = k_medoid_clustering(german_matrix, k_value)
 # print(clustering_result)
 
-# LabelNames = [1, -1]
-LabelNames = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-Mij = numbers_of_cluster_from_classes(german_labels, clustering_result, LabelNames, 10)
-# print(Mij)
-Purity = purity_compute(Mij, 10)
-GiniIndex = Gini_index_compute(Mij, 10)
+LabelNames = []
+
+if k_value == 2:
+    LabelNames = [1, -1]
+elif k_value == 10:
+    LabelNames = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+else:
+    print('error!')
+    exit()
+
+Mij = numbers_of_cluster_from_classes(german_labels, clustering_result, LabelNames, k_value)
+print(Mij)
+Purity = purity_compute(Mij, k_value)
+GiniIndex = Gini_index_compute(Mij, k_value)
 print(Purity)
 print(GiniIndex)
 
