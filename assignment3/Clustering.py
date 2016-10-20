@@ -3,6 +3,7 @@
 import numpy as np
 import os
 import random
+import datetime
 
 const_maxfloat = 1.7976931348623157e+308
 
@@ -192,10 +193,12 @@ def Gini_index_compute(m, k):
     return sum1 / sum2
 
 
-k_value = 2
+starttime = datetime.datetime.now()
+# k_value = 2
+# german_matrix, german_labels = load_matrix_from_txt('german.txt', True)
+k_value = 10
+german_matrix, german_labels = load_matrix_from_txt('mnist.txt', True)
 
-german_matrix, german_labels = load_matrix_from_txt('german.txt', True)
-# german_matrix, german_labels = load_matrix_from_txt('mnist.txt', True)
 clustering_result = k_medoid_clustering(german_matrix, k_value)
 # print(clustering_result)
 
@@ -215,4 +218,5 @@ Purity = purity_compute(Mij, k_value)
 GiniIndex = Gini_index_compute(Mij, k_value)
 print(Purity)
 print(GiniIndex)
-
+endtime = datetime.datetime.now()
+print('运行时间：%d 秒' % (endtime - starttime).seconds)
