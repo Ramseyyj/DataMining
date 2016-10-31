@@ -98,13 +98,17 @@ def clustering(medoids, matrix):
     return medoids
 
 
-def k_medoid_clustering(matrix, k):
+def k_medoid_clustering(filename, matrix, k):
+
+    dist_matrix = pd.read_csv(filename, delimiter=' ', header=None).values
 
     medoids = random_medoids(matrix, k)
 
     temp_medoids = [0 * i for i in range(k)]
 
     count = 0
+
+    objective_value = 0
 
     while not compare_medoids(temp_medoids, medoids):
 
@@ -123,18 +127,18 @@ def k_medoid_clustering(matrix, k):
 
                 sum_dist = 0
                 for s in medoids[i][2]:
-                    sum_dist += np.sum(abs(matrix[j, :] - matrix[s, :]))
+                    sum_dist += dist_matrix[j, s]
 
                 if sum_dist < min_dist:
                     min_dist = sum_dist
                     min_index = j
 
+                objective_value += sum_dist
+
             medoids[i][0] = min_index
             medoids[i][1] = matrix[min_index, :]
 
-    print('k-medoid迭代次数：%d' % count)
-
-    return medoids
+    return medoids, objective_value
 
 
 def numbers_of_cluster_from_classes(labels, medoids_result, label_names, k):
@@ -166,16 +170,7 @@ def graph_generating(matrix, filename):
     np.savetxt(filename, adj_matrix, fmt='%.5f', newline='\n')
 
 
-def laplaction_eigenmap_dimension_reduction(matrix, k):
-
-    eigval, eigvec = np.linalg.eig(matrix)
-
-    k_smallest_index = np.argsort(eigval)[0:k]
-
-    return eigvec[:, k_smallest_index]
-
-
-def spectral_clustering(filename, k_nn, k):
+def spectral_dimension_reduction(filename, k_nn, k):
 
     adj_matrix = pd.read_csv(filename, delimiter=' ', header=None).values
 
@@ -197,9 +192,13 @@ def spectral_clustering(filename, k_nn, k):
 
     L = D - W
 
-    Lk = laplaction_eigenmap_dimension_reduction(L, k)
+    eigval, eigvec = np.linalg.eig(L)
 
-    return k_medoid_clustering(Lk, k)
+    k_smallest_index = np.argsort(eigval)[0:k]
+
+    Lk = eigvec[:, k_smallest_index]
+
+    return Lk
 
 
 def purity_compute(m, k):
@@ -247,49 +246,78 @@ def evaluation(labels, cluster, label_names):
 
     Purity = purity_compute(Mij, k_value)
     GiniIndex = Gini_index_compute(Mij, k_value)
-    print('Purity：%f' % Purity)
-    print('Gini Index：%f' % GiniIndex)
+
+    print('purity: %f' % Purity)
+    print('Gini Index: %f' % GiniIndex)
 
 
-def main():
+def k_medoids_cluster_n_times(dist_matrix_filename, matrix, n):
 
-    starttime = datetime.datetime.now()
+    min_objective_value = const_maxfloat
+    best_clusters = {}
 
-    # dist_matrix_filename = 'dist_matrix_german.txt'
-    # german_matrix, german_labels = load_matrix_from_txt('german.txt', True)
+    for i in range(n):
+        clusters, objective_value = k_medoid_clustering(dist_matrix_filename, matrix, k_value)
 
-    dist_matrix_filename = 'dist_matrix.txt'
-    german_matrix, german_labels = load_matrix_from_txt('mnist.txt', True)
+        if objective_value < min_objective_value:
+            min_objective_value = objective_value
+            best_clusters = clusters.copy()
 
-    # graph_generating(german_matrix, dist_matrix_filename)
+    return best_clusters
 
-    LabelNames = []
 
-    if k_value == 2:
-        LabelNames = [1, -1]
-    elif k_value == 10:
-        LabelNames = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-    else:
-        print('error!')
-        exit()
+def spectral_clustering(dist_matrix_filename, k_nn):
 
-    time = [datetime.datetime.now() for i in range(4)]
-    print('k_medoids:')
-    clustering_result = k_medoid_clustering(german_matrix, k_value)
+    Lk = spectral_dimension_reduction(dist_matrix_filename, k_nn, k_value)
+
+    # filename = 'Lk_%d_%d' % (k_value, k_nn)+'.txt'
+    #
+    # np.savetxt(filename, Lk, fmt='%.5f', newline='\n')
+    #
+    # Lk = pd.read_csv(filename, delimiter=' ', header=None).values
+
+    filename = 'dist_Lk_%d_%d' % (k_value, k_nn)+'.txt'
+
+    graph_generating(Lk, filename)
+
+    return k_medoids_cluster_n_times(filename, Lk, 10)
+
+
+starttime = datetime.datetime.now()
+
+k_value = 2
+german_matrix, german_labels = load_matrix_from_txt('german.txt', True)
+
+# k_value = 10
+# dist_matrix_filename = 'dist_matrix.txt'
+# german_matrix, german_labels = load_matrix_from_txt('mnist.txt', True)
+
+# graph_generating(german_matrix, dist_matrix_filename)
+
+LabelNames = []
+
+if k_value == 2:
+    LabelNames = [1, -1]
+elif k_value == 10:
+    LabelNames = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+else:
+    print('error!')
+    exit()
+
+time = [datetime.datetime.now() for i in range(4)]
+print('k_medoids:')
+
+clustering_result = k_medoids_cluster_n_times('dist_matrix_german.txt', german_matrix, 10)
+evaluation(german_labels, clustering_result, LabelNames)
+
+time[0] = datetime.datetime.now()
+print('运行时间：%d 秒' % (time[0] - starttime).seconds)
+
+print('spectral_cluster:')
+for K_nn in range(3, 10, 3):
+    clustering_result = spectral_clustering('dist_matrix_german.txt', K_nn)
+    print('K_nn=%d' % K_nn)
     evaluation(german_labels, clustering_result, LabelNames)
-    time[0] = datetime.datetime.now()
-    print('运行时间：%d 秒' % (time[0] - starttime).seconds)
+    time[int(K_nn / 3)] = datetime.datetime.now()
+    print('运行时间：%d 秒' % (time[int(K_nn / 3)] - time[int(K_nn / 3 - 1)]).seconds)
 
-    print('spectral_cluster:')
-    for K_nn in range(3, 10, 3):
-        clustering_result = spectral_clustering(dist_matrix_filename, K_nn, k_value)
-        print('K_nn=%d' % K_nn)
-        evaluation(german_labels, clustering_result, LabelNames)
-        time[int(K_nn / 3)] = datetime.datetime.now()
-        print('运行时间：%d 秒' % (time[int(K_nn / 3)] - time[int(K_nn / 3 - 1)]).seconds)
-
-
-if __name__ == "__main__":
-
-    k_value = 2
-    main()
