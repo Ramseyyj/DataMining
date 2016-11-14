@@ -101,6 +101,7 @@ def SGD(matrix_train, matrix_test, label_train, label_test, iteration_count):
 
             index = temp_list[j]
             alpha = function_a(beta, matrix_train[index], label_train[index])
+            # error
             beta = iteration_beta(beta, alpha)
             iteration_beta_count += 1
 
