@@ -4,8 +4,8 @@ import random
 import math
 import matplotlib.pyplot as plt
 
-const_lambda = 1
-const_gamma_step = 2
+const_lambda = 0.01
+const_gamma_step = 0.01
 const_output_step = 3000
 
 
@@ -42,12 +42,15 @@ def load_matrix_label_from_txt(filename):
 
 
 def norm_one_partial_derivative(vector):
+
+    temp_vector = np.zeros(vector.shape[0])
+
     for i in range(vector.shape[0]):
         if vector[i] >= 0:
-            vector[i] = 1
+            temp_vector[i] = 1
         else:
-            vector[i] = -1
-    return vector
+            temp_vector[i] = -1
+    return temp_vector
 
 
 def function_a(vector_beta, vector_xi, yi):
@@ -57,6 +60,17 @@ def function_a(vector_beta, vector_xi, yi):
     temp = math.exp(-yi * temp) * -yi / (1 + math.exp(-yi * temp))
 
     vector_alpha = temp*vector_xi + const_lambda*norm_one_partial_derivative(vector_beta)
+
+    return vector_alpha
+
+
+def function_b(vector_beta, vector_xi, yi):
+
+    temp = np.dot(vector_beta.T, vector_xi)
+
+    temp = 2*(temp - yi)
+
+    vector_alpha = temp*vector_xi + 2*const_lambda*vector_beta
 
     return vector_alpha
 
@@ -85,6 +99,25 @@ def error_ratio_compute(vector_beta, matrix, label):
     return float(error_count) / matrix.shape[0]
 
 
+def figure_function(x_list, y1_list, y2_list, title, xlabel, y1_label, y2_label):
+
+    fig = plt.figure()
+
+    ax1 = fig.add_subplot(111)
+    ax1.plot(x_list, y1_list)
+    ax1.set_ylim(0, 1)
+    ax1.set_ylabel(y1_label)
+    ax1.set_title(title)
+
+    ax2 = ax1.twinx()  # this is the important function
+    ax2.plot(x_list, y2_list, 'r')
+    ax2.set_ylim(0, 1)
+    ax2.set_ylabel(y2_label)
+    ax2.set_xlabel(xlabel)
+
+    plt.show()
+
+
 def SGD(matrix_train, matrix_test, label_train, label_test, iteration_count):
 
     train_error_ratio_list = []
@@ -100,7 +133,7 @@ def SGD(matrix_train, matrix_test, label_train, label_test, iteration_count):
         for j in range(matrix_train.shape[0]):
 
             index = temp_list[j]
-            alpha = function_a(beta, matrix_train[index], label_train[index])
+            alpha = function_b(beta, matrix_train[index], label_train[index])
             # error
             beta = iteration_beta(beta, alpha)
             iteration_beta_count += 1
@@ -110,11 +143,16 @@ def SGD(matrix_train, matrix_test, label_train, label_test, iteration_count):
                 test_error_ratio_list.append(error_ratio_compute(beta, matrix_test, label_test))
                 iteration_beta_count = 0
                 error_ratio_count += 1
+                print(error_ratio_count)
 
     x = [i for i in range(error_ratio_count)]
 
-    plt.plot(x, train_error_ratio_list)
-    plt.show()
+    figure_function(x, train_error_ratio_list, test_error_ratio_list,
+                    "error-ratio ~ iterationCount", "iterationCount", "train-error-ratio", "test-error-ratio")
+
+    # plt.plot(x, train_error_ratio_list)
+    # plt.ylim(0, 1)
+    # plt.show()
 
 dataset1_train_txt = 'dataset1-a9a-training.txt'
 dataset1_test_txt = 'dataset1-a9a-testing.txt'
@@ -124,5 +162,9 @@ dataset2_test_txt = 'covtype-testing.txt'
 dataset1_train_matrix, dataset1_train_label = load_matrix_label_from_txt(dataset1_train_txt)
 dataset1_test_matrix, dataset1_test_label = load_matrix_label_from_txt(dataset1_test_txt)
 
+# dataset2_train_matrix, dataset2_train_label = load_matrix_label_from_txt(dataset2_train_txt)
+# dataset2_test_matrix, dataset2_test_label = load_matrix_label_from_txt(dataset2_test_txt)
+
 SGD(dataset1_train_matrix, dataset1_test_matrix, dataset1_train_label, dataset1_test_label, 10)
+# SGD(dataset2_train_matrix, dataset2_test_matrix, dataset2_train_label, dataset2_test_label, 1)
 
