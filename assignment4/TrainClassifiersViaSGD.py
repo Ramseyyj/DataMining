@@ -5,9 +5,9 @@ import math
 import matplotlib.pyplot as plt
 import xlwt
 
-const_lambda = 0.01
-const_gamma_step = 0.0001
-const_output_step = 3000
+const_lambda = 0.001
+const_gamma_step = 0.00005
+const_output_step = 6000
 
 
 def random_vector(dimension, min_value, max_value):
@@ -102,7 +102,7 @@ def error_ratio_compute(vector_beta, matrix, label):
 
 def figure_function(x_list, y1_list, y2_list, title, xlabel, y1_label, y2_label):
 
-    ylim_max = 0.4
+    ylim_max = 0.6
     ylim_min = 0.1
 
     fig = plt.figure()
@@ -180,13 +180,13 @@ dataset1_test_txt = 'dataset1-a9a-testing.txt'
 dataset2_train_txt = 'covtype-training.txt'
 dataset2_test_txt = 'covtype-testing.txt'
 
-dataset1_train_matrix, dataset1_train_label = load_matrix_label_from_txt(dataset1_train_txt)
-dataset1_test_matrix, dataset1_test_label = load_matrix_label_from_txt(dataset1_test_txt)
+# dataset1_train_matrix, dataset1_train_label = load_matrix_label_from_txt(dataset1_train_txt)
+# dataset1_test_matrix, dataset1_test_label = load_matrix_label_from_txt(dataset1_test_txt)
 # SGD(dataset1_train_matrix, dataset1_test_matrix, dataset1_train_label, dataset1_test_label, 5, 'logisticRegression')
-SGD(dataset1_train_matrix, dataset1_test_matrix, dataset1_train_label, dataset1_test_label, 10, 'ridgeRegression')
+# SGD(dataset1_train_matrix, dataset1_test_matrix, dataset1_train_label, dataset1_test_label, 10, 'ridgeRegression')
 
-# dataset2_train_matrix, dataset2_train_label = load_matrix_label_from_txt(dataset2_train_txt)
-# dataset2_test_matrix, dataset2_test_label = load_matrix_label_from_txt(dataset2_test_txt)
-# SGD(dataset2_train_matrix, dataset2_test_matrix, dataset2_train_label, dataset2_test_label, 1, 'logisticRegression')
-# SGD(dataset2_train_matrix, dataset2_test_matrix, dataset2_train_label, dataset2_test_label, 1, 'ridgeRegression')
+dataset2_train_matrix, dataset2_train_label = load_matrix_label_from_txt(dataset2_train_txt)
+dataset2_test_matrix, dataset2_test_label = load_matrix_label_from_txt(dataset2_test_txt)
+# SGD(dataset2_train_matrix, dataset2_test_matrix, dataset2_train_label, dataset2_test_label, 2, 'logisticRegression')
+SGD(dataset2_train_matrix, dataset2_test_matrix, dataset2_train_label, dataset2_test_label, 2, 'ridgeRegression')
 
