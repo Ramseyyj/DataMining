@@ -3,9 +3,10 @@ import os
 import random
 import math
 import matplotlib.pyplot as plt
+import xlwt
 
 const_lambda = 0.01
-const_gamma_step = 0.01
+const_gamma_step = 0.0001
 const_output_step = 3000
 
 
@@ -101,24 +102,40 @@ def error_ratio_compute(vector_beta, matrix, label):
 
 def figure_function(x_list, y1_list, y2_list, title, xlabel, y1_label, y2_label):
 
+    ylim_max = 0.4
+    ylim_min = 0.1
+
     fig = plt.figure()
 
     ax1 = fig.add_subplot(111)
     ax1.plot(x_list, y1_list)
-    ax1.set_ylim(0, 1)
+    ax1.set_ylim(ylim_min, ylim_max)
     ax1.set_ylabel(y1_label)
     ax1.set_title(title)
 
     ax2 = ax1.twinx()  # this is the important function
     ax2.plot(x_list, y2_list, 'r')
-    ax2.set_ylim(0, 1)
+    ax2.set_ylim(ylim_min, ylim_max)
     ax2.set_ylabel(y2_label)
     ax2.set_xlabel(xlabel)
 
     plt.show()
 
 
-def SGD(matrix_train, matrix_test, label_train, label_test, iteration_count):
+def excel_output(x_list, y1_list, y2_list):
+
+    f = xlwt.Workbook()
+    table = f.add_sheet('sheet1')
+
+    for i in range(len(x_list)):
+        table.write(i+1, 0, x_list[i]+1)
+        table.write(i+1, 1, y1_list[i])
+        table.write(i+1, 2, y2_list[i])
+
+    f.save('dataset1.xls')
+
+
+def SGD(matrix_train, matrix_test, label_train, label_test, iteration_count, algorithm):
 
     train_error_ratio_list = []
     test_error_ratio_list = []
@@ -133,7 +150,12 @@ def SGD(matrix_train, matrix_test, label_train, label_test, iteration_count):
         for j in range(matrix_train.shape[0]):
 
             index = temp_list[j]
-            alpha = function_b(beta, matrix_train[index], label_train[index])
+            if algorithm == 'logisticRegression':
+                alpha = function_a(beta, matrix_train[index], label_train[index])
+            elif algorithm == 'ridgeRegression':
+                alpha = function_b(beta, matrix_train[index], label_train[index])
+            else:
+                exit()
             # error
             beta = iteration_beta(beta, alpha)
             iteration_beta_count += 1
@@ -150,9 +172,8 @@ def SGD(matrix_train, matrix_test, label_train, label_test, iteration_count):
     figure_function(x, train_error_ratio_list, test_error_ratio_list,
                     "error-ratio ~ iterationCount", "iterationCount", "train-error-ratio", "test-error-ratio")
 
-    # plt.plot(x, train_error_ratio_list)
-    # plt.ylim(0, 1)
-    # plt.show()
+    excel_output(x, train_error_ratio_list, test_error_ratio_list)
+
 
 dataset1_train_txt = 'dataset1-a9a-training.txt'
 dataset1_test_txt = 'dataset1-a9a-testing.txt'
@@ -161,10 +182,11 @@ dataset2_test_txt = 'covtype-testing.txt'
 
 dataset1_train_matrix, dataset1_train_label = load_matrix_label_from_txt(dataset1_train_txt)
 dataset1_test_matrix, dataset1_test_label = load_matrix_label_from_txt(dataset1_test_txt)
+# SGD(dataset1_train_matrix, dataset1_test_matrix, dataset1_train_label, dataset1_test_label, 5, 'logisticRegression')
+SGD(dataset1_train_matrix, dataset1_test_matrix, dataset1_train_label, dataset1_test_label, 10, 'ridgeRegression')
 
 # dataset2_train_matrix, dataset2_train_label = load_matrix_label_from_txt(dataset2_train_txt)
 # dataset2_test_matrix, dataset2_test_label = load_matrix_label_from_txt(dataset2_test_txt)
-
-SGD(dataset1_train_matrix, dataset1_test_matrix, dataset1_train_label, dataset1_test_label, 10)
-# SGD(dataset2_train_matrix, dataset2_test_matrix, dataset2_train_label, dataset2_test_label, 1)
+# SGD(dataset2_train_matrix, dataset2_test_matrix, dataset2_train_label, dataset2_test_label, 1, 'logisticRegression')
+# SGD(dataset2_train_matrix, dataset2_test_matrix, dataset2_train_label, dataset2_test_label, 1, 'ridgeRegression')
 
