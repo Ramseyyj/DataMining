@@ -51,17 +51,25 @@ def feature_conditional_probability(matrix, label, feature_category):
 
         elif feature_category == 0:
 
-            average = np.mean(matrix[:, i])
-            variance = np.var(matrix[:, i])
+            category_dict = {}
+            for j in range(matrix.shape[0]):
+                if label[j] in category_dict.keys():
+                    category_dict[label[j]].append(matrix[j, i])
+                else:
+                    category_dict[label[j]] = []
+                    category_dict[label[j]].append(matrix[j, i])
+
+            for j in range(matrix.shape[0]):
+                average = np.mean(category_dict[label[j]])
+                variance = np.var(category_dict[label[j]])
+                feature_conditional_probability_dict[(matrix[j, i], label[j])] \
+                    = math.exp(-(matrix[j, i] - variance)**2 / (2*average**2)) / (math.sqrt(2*math.pi)*average)
 
         else:
             print('error!')
             exit()
 
-
-
-
-
+    return feature_conditional_probability_dict
 
 dataset1_filename = 'breast-cancer-assignment5.txt'
 dataset2_filename = 'german-assignment5.txt'
