@@ -38,7 +38,11 @@ def feature_conditional_probability(matrix, label, feature_category):
         else:
             label_dict[label[i]] = 1
 
-    feature_conditional_probability_dict = {}
+    feature_conditional_probability_dict = dict()
+
+    feature_conditional_probability_dict[-1] = label_dict[-1] / len(label)
+    feature_conditional_probability_dict[1] = label_dict[1] / len(label)
+
     for i in range(matrix.shape[1]):
 
         if feature_category == 1:
@@ -71,9 +75,29 @@ def feature_conditional_probability(matrix, label, feature_category):
 
     return feature_conditional_probability_dict
 
+
+def naive_bayes_classifier(feature_conditional_probability_dict, vector):
+
+    probability_label_negative_one = feature_conditional_probability_dict[-1]
+    probability_label_postive_one = feature_conditional_probability_dict[1]
+
+    for i in range(vector.shape[0]):
+        probability_label_negative_one *= feature_conditional_probability_dict[(vector[i], -1)]
+        probability_label_postive_one *= feature_conditional_probability_dict[(vector[i], 1)]
+
+    if probability_label_postive_one > probability_label_negative_one:
+        return 1
+    else:
+        return -1
+
+
 dataset1_filename = 'breast-cancer-assignment5.txt'
 dataset2_filename = 'german-assignment5.txt'
 
 dataset1_matrix, dataset1_label, dataset1_feature_category = load_data_from_txt(dataset1_filename)
 
+# 把数据集1的标签0改成-1，对标签进行统一，都变成-1和1
+for index_g in range(len(dataset1_label)):
+    if dataset1_label[index_g] == 0:
+        dataset1_label[index_g] = -1
 
