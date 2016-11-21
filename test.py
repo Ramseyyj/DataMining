@@ -9,7 +9,11 @@ a = np.array([[1, 2, 3],
 # print(np.var(b))
 
 
-x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-print(np.std(x, ddof=1))
+# x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+# print(np.std(x, ddof=1))
 
+d = {}
+d[('abc', -1)] = 1
+
+print(d)
 
