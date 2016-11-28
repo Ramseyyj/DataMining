@@ -67,10 +67,10 @@ def feature_conditional_probability(matrix, label, feature_category, weight_list
         if feature_category[i] == '1':
 
             for j in range(matrix.shape[0]):
-                if (matrix[j, i], label[j]) in feature_conditional_probability_dict.keys():
-                    feature_conditional_probability_dict[(matrix[j, i], label[j])] += weight_list[j]
+                if (matrix[j, i], i, label[j]) in feature_conditional_probability_dict.keys():
+                    feature_conditional_probability_dict[(matrix[j, i], i, label[j])] += weight_list[j]
                 else:
-                    feature_conditional_probability_dict[(matrix[j, i], label[j])] = weight_list[j]
+                    feature_conditional_probability_dict[(matrix[j, i], i, label[j])] = weight_list[j]
                     category_count += 1
 
         elif feature_category[i] == '0':
@@ -85,14 +85,14 @@ def feature_conditional_probability(matrix, label, feature_category, weight_list
 
             feature_conditional_probability_dict[('mean', i, -1)] = np.mean(category_dict[-1])
             feature_conditional_probability_dict[('mean', i, 1)] = np.mean(category_dict[1])
-            feature_conditional_probability_dict[('var', i, -1)] = np.mean(category_dict[-1])
-            feature_conditional_probability_dict[('var', i, 1)] = np.mean(category_dict[1])
+            feature_conditional_probability_dict[('var', i, -1)] = np.var(category_dict[-1])
+            feature_conditional_probability_dict[('var', i, 1)] = np.var(category_dict[1])
 
         else:
             print('error!')
             exit()
 
-        feature_conditional_probability_dict[('category', i)] = category_count
+        feature_conditional_probability_dict[('category', i)] = category_count / 2
 
     return feature_conditional_probability_dict
 
@@ -107,16 +107,16 @@ def naive_bayes_classifier(feature_conditional_probability_dict, feature_categor
 
     for i in range(vector.shape[0]):
         if feature_category[i] == '1':
-            if (vector[i], -1) in feature_conditional_probability_dict.keys():
+            if (vector[i], i, -1) in feature_conditional_probability_dict.keys():
                 probability_label_negative_one *= \
-                    (feature_conditional_probability_dict[(vector[i], -1)] + 1) / (negative_one_count + feature_conditional_probability_dict[('category', i)])
+                    (feature_conditional_probability_dict[(vector[i], i, -1)] + 1) / (negative_one_count + feature_conditional_probability_dict[('category', i)])
             else:
                 probability_label_negative_one *= \
                     1 / (negative_one_count + feature_conditional_probability_dict[('category', i)])
 
-            if (vector[i], 1) in feature_conditional_probability_dict.keys():
+            if (vector[i], i, 1) in feature_conditional_probability_dict.keys():
                 probability_label_postive_one *= \
-                    (feature_conditional_probability_dict[(vector[i], 1)] + 1) / (postive_one_count + feature_conditional_probability_dict[('category', i)])
+                    (feature_conditional_probability_dict[(vector[i], i, 1)] + 1) / (postive_one_count + feature_conditional_probability_dict[('category', i)])
             else:
                 probability_label_postive_one *= \
                     1 / (postive_one_count + feature_conditional_probability_dict[('category', i)])
@@ -127,8 +127,20 @@ def naive_bayes_classifier(feature_conditional_probability_dict, feature_categor
             postive_average = feature_conditional_probability_dict[('mean', i, 1)]
             postive_variance = feature_conditional_probability_dict[('var', i, 1)]
 
+            temp1 = (vector[i] - negative_variance)**2
+            temp1 /= (2*negative_average**2)
+            temp1 = -temp1
+            temp1 = math.exp(temp1)
+            temp1 /= (math.sqrt(2*math.pi)*negative_average)
+
             probability_label_negative_one *=\
                 math.exp(-(vector[i] - negative_variance)**2 / (2*negative_average**2)) / (math.sqrt(2*math.pi)*negative_average)
+
+            temp2 = (vector[i] - postive_variance) ** 2
+            temp2 /= (2 * postive_average ** 2)
+            temp2 = -temp2
+            temp2 = math.exp(temp2)
+            temp2 /= (math.sqrt(2 * math.pi) * postive_average)
 
             probability_label_postive_one *= \
                 math.exp(-(vector[i] - postive_variance) ** 2 / (2 * postive_average ** 2)) / (math.sqrt(2 * math.pi) * postive_average)
@@ -137,7 +149,7 @@ def naive_bayes_classifier(feature_conditional_probability_dict, feature_categor
             print('naive_bayes_classifier error!')
 
     probability_label_negative_one *= (negative_one_count + 1) / (negative_one_count + postive_one_count + 2)
-    probability_label_postive_one = (postive_one_count + 1) / (negative_one_count + postive_one_count + 2)
+    probability_label_postive_one *= (postive_one_count + 1) / (negative_one_count + postive_one_count + 2)
 
     if probability_label_postive_one > probability_label_negative_one:
         return 1
@@ -171,7 +183,7 @@ def adaboost_core(matrix, label, feature_category, Iteration_count):
 
     for t in range(Iteration_count):
 
-        temp_dict = feature_conditional_probability(matrix, label, feature_category, temp_weight_list)
+        temp_dict = feature_conditional_probability(matrix, label, feature_category, weight_list)
 
         classifier_result = list()
         for i in range(matrix.shape[0]):
@@ -189,8 +201,8 @@ def adaboost_core(matrix, label, feature_category, Iteration_count):
 
         Zt = 0
         for i in range(matrix.shape[0]):
-            Zt += weight_list[i]
             weight_list[i] *= math.exp(-at*label[i]*classifier_result[i])
+            Zt += weight_list[i]
 
         for i in range(matrix.shape[0]):
             weight_list[i] /= Zt
@@ -245,11 +257,14 @@ def accuracy_compute(label, result_list):
     return count / len(label)
 
 
-def fold_cross_validation(fold_count, matrix, label, feature_category, Iteration_count):
+def fold_cross_validation(fold_count, matrix, label, feature_category, Iteration_count, random_flag):
 
     each_count = int(matrix.shape[0] / fold_count) + 1
 
-    rand_list = random_list(matrix.shape[0])
+    if random_flag:
+        row_list = random_list(matrix.shape[0])
+    else:
+        row_list = [i for i in range(matrix.shape[0])]
 
     accuracy_list = list()
 
@@ -257,17 +272,17 @@ def fold_cross_validation(fold_count, matrix, label, feature_category, Iteration
         if i == fold_count - 1:
             min_index = i*each_count
 
-            matrix_train = matrix[rand_list[:min_index]]
-            matrix_test = matrix[rand_list[min_index:]]
+            matrix_train = matrix[row_list[:min_index]]
+            matrix_test = matrix[row_list[min_index:]]
 
             label_train = list()
             label_test = list()
 
             for j in range(matrix.shape[0]):
                 if j < min_index:
-                    label_train.append(label[rand_list[j]])
+                    label_train.append(label[row_list[j]])
                 else:
-                    label_test.append(label[rand_list[j]])
+                    label_test.append(label[row_list[j]])
 
             label_train = label[:min_index]
             label_test = label[min_index:]
@@ -281,11 +296,11 @@ def fold_cross_validation(fold_count, matrix, label, feature_category, Iteration
 
             for j in range(matrix.shape[0]):
                 if min_index <= j <= max_index:
-                    test_index_list.append(rand_list[j])
-                    label_test.append(label[rand_list[j]])
+                    test_index_list.append(row_list[j])
+                    label_test.append(label[row_list[j]])
                 else:
-                    train_index_list.append(rand_list[j])
-                    label_train.append(label[rand_list[j]])
+                    train_index_list.append(row_list[j])
+                    label_train.append(label[row_list[j]])
 
             matrix_train = matrix[train_index_list]
             matrix_test = matrix[test_index_list]
@@ -296,7 +311,7 @@ def fold_cross_validation(fold_count, matrix, label, feature_category, Iteration
         accuracy_list.append(accuracy_compute(label_test, result_list))
 
     result_mean = np.mean(accuracy_list)
-    result_standard_deviation = np.std(accuracy_list, ddof=1)
+    result_standard_deviation = np.std(accuracy_list)
 
     print('%s, %s' % (result_mean, result_standard_deviation))
 
@@ -311,8 +326,7 @@ for index_g in range(len(dataset1_label)):
     if dataset1_label[index_g] == 0:
         dataset1_label[index_g] = -1
 
-fold_cross_validation(10, dataset1_matrix, dataset1_label, dataset1_feature_category, 8)
+fold_cross_validation(10, dataset1_matrix, dataset1_label, dataset1_feature_category, 100, True)
 
-# dataset2_matrix, dataset2_label, dataset2_feature_category = load_data_from_txt(dataset2_filename)
-# fold_cross_validation(10, dataset2_matrix, dataset2_label, dataset2_feature_category, 1)
-
+dataset2_matrix, dataset2_label, dataset2_feature_category = load_data_from_txt(dataset2_filename)
+fold_cross_validation(10, dataset2_matrix, dataset2_label, dataset2_feature_category, 100, True)

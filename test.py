@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 a = np.array([[1, 2, 3],
               [4, 5, 6],
@@ -12,8 +13,7 @@ a = np.array([[1, 2, 3],
 # x = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 # print(np.std(x, ddof=1))
 
-d = {}
-d[('abc', -1)] = 1
-
-print(d)
+a = math.log(0.001, 0.5)
+b = a / math.log(2)
+print(b)
 
